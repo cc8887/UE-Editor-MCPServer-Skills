@@ -1,0 +1,60 @@
+{
+  "name": "ue-editor-mcpserver-skills",
+  "owner": {
+    "name": "cc8887"
+  },
+  "metadata": {
+    "description": "Skills for UE-Editor-MCPServer - AI-driven Unreal Engine development through AnimBP2FP, MatBP2FP, BlueprintLisp, and ALSV integration",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "alsv-blueprint-rw",
+      "description": "Read/write AnimBlueprint assets via in-process Python Bridge in AdvancedLocomotionSystemV",
+      "version": "1.0.0",
+      "source": "./plugins/alsv-blueprint-rw",
+      "author": {
+        "name": "cc8887"
+      },
+      "license": "MIT",
+      "keywords": ["unreal-engine", "animbp", "blueprint", "ai", "mcp"],
+      "strict": true
+    },
+    {
+      "name": "animbp2fp-mcp",
+      "description": "AnimBP2FP conversion through MCP - export, import, update, and round-trip validation via commandlets and Python Bridge",
+      "version": "1.0.0",
+      "source": "./plugins/animbp2fp-mcp",
+      "author": {
+        "name": "cc8887"
+      },
+      "license": "MIT",
+      "keywords": ["unreal-engine", "animbp", "dsl", "commandlet", "mcp"],
+      "strict": true
+    },
+    {
+      "name": "blueprint-lisp",
+      "description": "BlueprintLisp DSL for any Blueprint graph - EventGraph, FunctionGraph, and more via Python Bridge",
+      "version": "1.0.0",
+      "source": "./plugins/blueprint-lisp",
+      "author": {
+        "name": "cc8887"
+      },
+      "license": "MIT",
+      "keywords": ["unreal-engine", "blueprint", "lisp", "dsl", "event-graph"],
+      "strict": true
+    },
+    {
+      "name": "matbp2fp",
+      "description": "Material to MatLang DSL conversion - export, import, update materials with AI-driven editing",
+      "version": "1.0.0",
+      "source": "./plugins/matbp2fp",
+      "author": {
+        "name": "cc8887"
+      },
+      "license": "MIT",
+      "keywords": ["unreal-engine", "material", "matlang", "dsl", "ai"],
+      "strict": true
+    }
+  ]
+}

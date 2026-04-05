@@ -1,0 +1,5 @@
+{
+  "name": "blueprint-lisp",
+  "description": "BlueprintLisp DSL for any Blueprint graph via Python Bridge",
+  "version": "1.0.0"
+}

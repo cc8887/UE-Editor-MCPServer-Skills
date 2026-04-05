@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# UE
+Binaries/
+Intermediate/
+DerivedDataCache/
+Saved/
+*.sln

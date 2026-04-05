@@ -1,0 +1,2 @@
+This skill does not require bundled assets.
+Keep this file only as a placeholder for an otherwise empty assets/ directory.

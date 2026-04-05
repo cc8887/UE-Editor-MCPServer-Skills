@@ -1,0 +1,5 @@
+{
+  "name": "alsv-blueprint-rw",
+  "description": "Read/write AnimBlueprint assets via in-process Python Bridge in AdvancedLocomotionSystemV",
+  "version": "1.0.0"
+}

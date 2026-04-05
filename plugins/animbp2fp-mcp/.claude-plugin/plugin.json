@@ -1,0 +1,5 @@
+{
+  "name": "animbp2fp-mcp",
+  "description": "AnimBP2FP conversion through MCP - export, import, update, and round-trip validation",
+  "version": "1.0.0"
+}
