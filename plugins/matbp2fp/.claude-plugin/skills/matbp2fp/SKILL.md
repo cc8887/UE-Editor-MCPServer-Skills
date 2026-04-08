@@ -48,6 +48,14 @@ result = unreal.MatBP2FPPythonBridge.export_material_to_file(
     "/Game/Materials/M_Example.M_Example",
     "<PROJECT_ROOT>/Saved/BP2DSL/MatBP/Materials/M_Example.matlang"
 )
+
+# 导出材质及其所有依赖的 MaterialFunction（递归）
+# 每个资产独立导出为 .matlang，路径: {OutputDir}/{/Game/相对路径}.matlang
+result = unreal.MatBP2FPPythonBridge.export_material_with_dependencies_to_file(
+    "/Game/Materials/M_Example.M_Example",
+    "<PROJECT_ROOT>/Saved/BP2DSL/MatBP"
+)
+print(result.message)  # 列出所有导出的文件（材质 + 函数）
 ```
 
 ### Import（从 DSL 新建材质）
@@ -171,9 +179,12 @@ print(result.file_path)    # -> {Project}/Saved/BP2DSL/MatBP/Props/M_Wood.matlan
 {Project}/Saved/BP2DSL/MatBP/{/Game/ 相对路径}.matlang
 ```
 
-示例：`/Game/Props/M_Wood` → `{Project}/Saved/BP2DSL/MatBP/Props/M_Wood.matlang`
+示例：
+- 材质：`/Game/Props/M_Wood` → `{Project}/Saved/BP2DSL/MatBP/Props/M_Wood.matlang`
+- 材质函数：`/Game/Functions/MF_Roughness` → `{Project}/Saved/BP2DSL/MatBP/Functions/MF_Roughness.matlang`
 
-CompilerHook（Mat2FP 模式）编译时自动导出到此路径，无需手动指定。
+CompilerHook（Mat2FP 模式）编译时自动导出材质到此路径。
+使用 `export_material_with_dependencies_to_file` 可同时导出材质及其引用的所有 MaterialFunction。
 
 ## 常见问题排查
 

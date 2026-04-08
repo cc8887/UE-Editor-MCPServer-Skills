@@ -200,6 +200,7 @@ print(result.b_success, result.message)
 ```
 
 > **分工说明**：
+> 
 > - AnimGraph（状态机/CachedPose/LinkedLayer）→ 只走 `AnimBP2FPPythonBridge`
 > - EventGraph Import/Update → 优先走 `BlueprintLispPythonBridge`
 > - EventGraph Export → 两者均可，`AnimBP2FPPythonBridge.export_event_graph_to_text` 也可
@@ -223,20 +224,20 @@ def prop(obj, name, default=None):
 
 关键字段：
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `b_success` | bool | 是否成功 |
-| `message` | str | 成功/失败原因 |
-| `dsl_text` | str | DSL 文本（export 类操作） |
-| `asset_path` | str | 被操作或新建的资产路径 |
-| `file_path` | str | 写入的文件路径 |
-| `b_used_incremental_patch` | bool | update 是否走增量 patch |
-| `b_saved_package` | bool | 是否已写磁盘 |
-| `num_changes` | int | 总变更数 |
-| `num_property_changes` | int | 属性变更数 |
-| `num_structural_changes` | int | 结构变更数 |
-| `applied_ops` | list[str] | 实际应用的 diff 操作列表 |
-| `warnings` | list[str] | 警告列表（含编译错误）|
+| 字段                         | 类型        | 说明                 |
+| -------------------------- | --------- | ------------------ |
+| `b_success`                | bool      | 是否成功               |
+| `message`                  | str       | 成功/失败原因            |
+| `dsl_text`                 | str       | DSL 文本（export 类操作） |
+| `asset_path`               | str       | 被操作或新建的资产路径        |
+| `file_path`                | str       | 写入的文件路径            |
+| `b_used_incremental_patch` | bool      | update 是否走增量 patch |
+| `b_saved_package`          | bool      | 是否已写磁盘             |
+| `num_changes`              | int       | 总变更数               |
+| `num_property_changes`     | int       | 属性变更数              |
+| `num_structural_changes`   | int       | 结构变更数              |
+| `applied_ops`              | list[str] | 实际应用的 diff 操作列表    |
+| `warnings`                 | list[str] | 警告列表（含编译错误）        |
 
 ---
 
