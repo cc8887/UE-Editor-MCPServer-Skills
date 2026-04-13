@@ -1,6 +1,6 @@
 ---
 name: blueprint-lisp
-description: This skill should be used when working in AdvancedLocomotionSystemV and the task involves reading or writing ANY Blueprint's EventGraph (or other named graph) via BlueprintLisp DSL. Unlike alsv-blueprint-rw (which is AnimBlueprint-specific), this skill covers all Blueprint types and uses the in-process Python Bridge unreal.BlueprintLispPythonBridge. Supports Export, Import, Incremental Update, and DSL validation.
+description: This skill should be used when working in AdvancedLocomotionSystemV and the task involves reading or writing ANY Blueprint's EventGraph (or other named graph) via BlueprintLisp DSL. this skill covers all Blueprint types and uses the in-process Python Bridge unreal.BlueprintLispPythonBridge. Supports Export, Import, Incremental Update, and DSL validation.
 ---
 
 # BlueprintLisp — 通用 Blueprint Graph <-> BlueprintLisp DSL
@@ -14,13 +14,13 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 
 Python 类名：`unreal.BlueprintLispPythonBridge`
 
-操作通道：`ue-editor-alsv → execute_command → unreal.BlueprintLispPythonBridge`
+操作通道：`ue-editor→ execute_command → unreal.BlueprintLispPythonBridge`
 
 ---
 
 ## 强制约束
 
-1. 只使用 `ue-editor-alsv` 连接编辑器。
+1. 只使用MCP `ue-editor` 连接和操作编辑器。
 2. 操作前先确认编辑器在线（`get_editor_state`）。
 3. 资产路径格式：`/Game/Foo/BP_Bar` 或 `/Game/Foo/BP_Bar.BP_Bar`（两段都可以，Bridge 内部自动补全）。
 4. `bClearExisting=True` 会清除图中已有节点，请谨慎；`bClearExisting=False`（默认）在已有节点基础上追加。
@@ -114,6 +114,7 @@ print("success:", result.b_success)
 ```
 
 Update 流程（内部）：
+
 1. Export 当前图 → old AST
 2. Parse new DSL → new AST
 3. Semantic diff（通过 `:id`/`:event-id` 标签匹配）
@@ -134,15 +135,15 @@ for err in result.warnings:
 
 ## FBlueprintLispPythonResult 字段
 
-| 字段 | 类型 | 说明 |
-|-----|------|------|
-| `b_success` | bool | 是否成功 |
-| `message` | str | 结果描述 |
-| `asset_path` | str | 被操作的 Blueprint 路径 |
-| `file_path` | str | 写入/读取的文件路径 |
-| `dsl_text` | str | DSL 文本（Export 操作） |
-| `b_saved_package` | bool | 是否已保存到磁盘 |
-| `warnings` | list[str] | 警告/错误列表 |
+| 字段                | 类型        | 说明                |
+| ----------------- | --------- | ----------------- |
+| `b_success`       | bool      | 是否成功              |
+| `message`         | str       | 结果描述              |
+| `asset_path`      | str       | 被操作的 Blueprint 路径 |
+| `file_path`       | str       | 写入/读取的文件路径        |
+| `dsl_text`        | str       | DSL 文本（Export 操作） |
+| `b_saved_package` | bool      | 是否已保存到磁盘          |
+| `warnings`        | list[str] | 警告/错误列表           |
 
 ---
 
@@ -164,6 +165,7 @@ for err in result.warnings:
 ```
 
 **关键结构**：
+
 - `(event :name "EventName" :id "stable-id" ...)` — 每个事件函数
 - `(call "FunctionName" ...)` — 蓝图函数调用
 - `(branch :condition expr :true ... :false ...)` — 分支节点
@@ -175,20 +177,20 @@ for err in result.warnings:
 
 ## 与其他 Bridge 的分工
 
-| Bridge | 适用范围 |
-|--------|---------|
-| `unreal.AnimBP2FPPythonBridge` | AnimBlueprint 的 **AnimGraph**（状态机/CachedPose/LinkedLayer等）+ EventGraph |
-| **`unreal.BlueprintLispPythonBridge`** | **任意 Blueprint 的任意 Graph**（EventGraph/FunctionGraph等），无动画图专属特性 |
-| `unreal.MatBP2FPPythonBridge` | UMaterial 材质表达式图 |
+| Bridge                                 | 适用范围                                                                   |
+| -------------------------------------- | ---------------------------------------------------------------------- |
+| `unreal.AnimBP2FPPythonBridge`         | AnimBlueprint 的 **AnimGraph**（状态机/CachedPose/LinkedLayer等）+ EventGraph |
+| **`unreal.BlueprintLispPythonBridge`** | **任意 Blueprint 的任意 Graph**（EventGraph/FunctionGraph等），无动画图专属特性         |
+| `unreal.MatBP2FPPythonBridge`          | UMaterial 材质表达式图                                                       |
 
 ---
 
 ## 源码位置
 
-| 内容 | 路径 |
-|-----|------|
+| 内容                | 路径                                                                              |
+| ----------------- | ------------------------------------------------------------------------------- |
 | Python Bridge 头文件 | `Plugins/BlueprintLisp/Source/BlueprintLisp/Public/BlueprintLispPythonBridge.h` |
-| Converter 头文件 | `Plugins/BlueprintLisp/Source/BlueprintLisp/Public/BlueprintLispConverter.h` |
+| Converter 头文件     | `Plugins/BlueprintLisp/Source/BlueprintLisp/Public/BlueprintLispConverter.h`    |
 
 ---
 
@@ -198,6 +200,7 @@ for err in result.warnings:
 
 - 确认路径格式 `/Game/Foo/BP_Bar` 或 `/Game/Foo/BP_Bar.BP_Bar`
 - 用 AssetRegistry 查询确认路径：
+  
   ```python
   reg = unreal.AssetRegistryHelpers.get_asset_registry()
   for a in reg.get_all_assets():

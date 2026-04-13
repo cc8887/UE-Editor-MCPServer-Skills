@@ -7,10 +7,7 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 
 ## Overview
 
-在项目中，通过 MCP 触发 AnimBP2FP 转换时，现在有两条正式链路：
-
-1. **进程内直调**：`ue-editor-alsv -> execute_command -> unreal.AnimBP2FPPythonBridge`
-2. **commandlet 子进程**：`ue-editor-alsv -> execute_command -> 编辑器内 Python -> subprocess -> UnrealEditor-Cmd.exe commandlet`
+在项目中，通过 MCP 触发 AnimBP2FP 转换`ue-editor-> execute_command -> unreal.AnimBP2FPPythonBridge`
 
 当前项目已经在 `AnimBP2FPEditor` 中补齐了 Python 暴露层：
 
@@ -20,7 +17,6 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 因此：
 
 - 单资产读写、AI 在打开编辑器时直接读/改蓝图，优先走 **进程内直调**
-- 批量导出、批量 round-trip、批处理回归验证，优先走 **commandlet**
 
 ## 何时使用
 
@@ -33,54 +29,15 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 
 ## 强制约束
 
-1. 只使用 `ue-editor-alsv` 连接编辑器。
-2. 不要使用 `unreal-mcp` 连接这个项目。
-3. 不要在 Python 里直接假设 `FAnimBPExporter` / `FAnimBPImporter` 这些静态类可见；应通过 `unreal.AnimBP2FPPythonBridge` 调用封装后的 `UFUNCTION`。
-4. 单资产交互优先使用 Python bridge；批量任务优先使用现有 commandlet。
-5. 所有命令、路径、输出目录都使用绝对路径。
-
-## 现有可用入口
-
-### 1. AnimLang 导出
-
-```text
--run=AnimBP2FPExport
-```
-
-作用：批量导出项目里的 AnimBlueprint 到 `AnimLang/Exported/`
-
-### 2. AnimLang round-trip 校验
-
-```text
--run=AnimBP2FPRoundTrip
-```
-
-作用：对 `AnimLang/Exported/` 中的 `.animlang` 执行 round-trip 比较
-
-### 3. AnimLang 导入 / 导入测试 / 更新测试
-
-```text
--run=AnimBP2FPImport
--run=AnimBP2FPImport -file=<abs-path>
--run=AnimBP2FPImport -file=<abs-path> -outdir=/Game/AnimBP2FP/Imported
--run=AnimBP2FPImport -file=<abs-path> -test
--run=AnimBP2FPImport -file=<abs-path> -update
-```
-
-### 4. EventGraph -> BlueprintLisp 导出
-
-```text
--run=AnimBP2FPBlueprintLisp
--run=AnimBP2FPBlueprintLisp -bp=/Game/Path/BP.BP -graph=EventGraph -roundtrip
-```
-
-作用：通过 `FAnimBPExporter::ExportEventGraph()` 导出 EventGraph 到 BlueprintLisp DSL
+1. 只使用 MCP`ue-editor` 连接编辑器及操作编辑器。
+2. 不要在 Python 里直接假设 `FAnimBPExporter` / `FAnimBPImporter` 这些静态类可见；应通过 `unreal.AnimBP2FPPythonBridge` 调用封装后的 `UFUNCTION`。
+3. 所有命令、路径、输出目录都使用绝对路径。
 
 ## 推荐工作流
 
 ### Step 1: 先确认编辑器连接
 
-先检查 `ue-editor-alsv` 是否已经连接到编辑器。如果编辑器未连接，不要继续执行转换。
+先检查 MCP `ue-editor` 是否已经连接到编辑器。如果编辑器未连接，不要继续执行转换。
 
 ### Step 2: 先选入口，再执行
 
@@ -111,31 +68,7 @@ print(result.message)
 print(result.dsl_text)
 ```
 
-### Step 4: 批处理再走 commandlet
-
-当任务是批量导出、批量 round-trip、批量回归时，再在编辑器 Python 中用 `subprocess.run(...)` 调用：
-
-将 `<ENGINE_ROOT>` 替换为你的 UE 引擎路径，`<PROJECT_FILE>` 替换为你的 `.uproject` 文件路径。
-
-```python
-import subprocess
-
-cmd = [
-    r"<ENGINE_ROOT>/Engine/Binaries/Win64/UnrealEditor-Cmd.exe",
-    r"<PROJECT_FILE>",
-    "-run=AnimBP2FPExport",
-    "-stdout",
-    "-unattended",
-    "-nullrhi",
-]
-
-result = subprocess.run(cmd, capture_output=True, text=True)
-print(result.returncode)
-print(result.stdout)
-print(result.stderr)
-```
-
-### Step 5: 检查输出目录
+### Step 4 检查输出目录
 
 标准输出目录（按项目惯例）：
 
@@ -156,10 +89,6 @@ print(result.stderr)
 - 通过 `unreal.BlueprintLispPythonBridge.import_graph_from_text/update_graph_from_text` **导入/更新** EventGraph
 - 通过 MCP 间接触发 AnimBP2FP 全套 commandlet
 - 批量导出 / round-trip / 导入 / 更新测试
-
-### 仍然不能直接做
-
-- 在编辑器 Python 中直接调用 `FAnimBPExporter::Export(...)` / `FAnimBPImporter::Import(...)` C++ 静态函数（只能走 Bridge 封装）
 
 ## Python bridge 位置
 
