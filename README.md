@@ -10,6 +10,7 @@ Skills marketplace for [UE-Editor-MCPServer](https://github.com/cc8887/UE-Editor
 | **animbp2fp-mcp** | AnimBP2FP conversion through MCP (export, import, round-trip) |
 | **blueprint-lisp** | BlueprintLisp DSL for any Blueprint graph |
 | **matbp2fp** | Material to MatLang DSL conversion |
+| **bpproject2cpp** | Convert pure Blueprint UE projects to C++ projects, generate Source/, .sln and compile without editor |
 
 ## Prerequisites
 

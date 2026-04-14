@@ -1,0 +1,5 @@
+{
+  "name": "bpproject2cpp",
+  "description": "Convert pure Blueprint UE projects to C++ projects: generate Source/, Build.cs, Target.cs, .h/.cpp, .sln and compile via UnrealBuildTool command line, without opening the editor",
+  "version": "1.0.0"
+}
