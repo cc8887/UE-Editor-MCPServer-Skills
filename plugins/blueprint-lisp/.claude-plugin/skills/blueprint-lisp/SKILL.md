@@ -33,11 +33,18 @@ Python 类名：`unreal.BlueprintLispPythonBridge`
 ## 能力边界与推荐口径
 
 - 默认导入模式优先使用 `ReplaceGraph`，这是当前最稳的全量替换语义。
-- `MergeAppend` 只在明确希望保留现有节点并追加新内容时使用；重复执行可能累积节点或事件入口。
-- `UpdateSemantic` 用于增量更新场景，依赖稳定的 `:event-id` / `:id`。
+- `MergeAppend` 已不再只是“盲目追加”：当 DSL 带稳定 `:event-id` / `:id` 时，当前已验证可复用的 EventGraph 路径包括 root event、`call`、`call-macro`、`set`、`branch`、`cast`、`switch-int`、`call-parent`、`input-action`、`input-key`、`component-bound-event`、`actor-bound-event`、结构性 `seq`、`macro exit/generic fallback`，以及已专项验证的 pure `call`、`make-array` / `get-array-item`、generic pure enum compare。
+- 但 `MergeAppend` 仍不是“任意节点都已语义更新完成”；超出上述已验证覆盖时，仍要准备接受追加/退化重建语义，必要时回退 `ReplaceGraph`。
+- `UpdateSemantic` 用于增量更新场景，依赖稳定的 `:event-id` / `:id`；若目标是已验证覆盖内的节点级复用，优先确保 export 时 `b_stable_ids=true`。
 - 当前已支持顶层 `(func Name)` 创建新的 FunctionGraph，再用 `(function Name ...)` 导入函数体。
+- EventGraph 中的父类 override 调用现已稳定使用 `(call-parent Name [:pin value]...)` 表示；旧 DSL 里裸写的 `ReceiveBeginPlay` / `ReceiveTick` / `ReceiveActorBeginOverlap` 调用，导入时也会自动兼容恢复成父类调用节点。
+- FunctionGraph / MacroGraph / Event 顶层名称，以及 `call-parent` / `call-macro` 的目标名称，若包含空格，推荐直接写成字符串，例如 `(function "Villager Select" ...)`、`(call-macro "Edge Move" ...)`。
 - `MacroGraph` 目前更适合“导入到已有宏图”而不是自动新建宏图。
+- DSL 里的 keyword 目前仍建议保持无空格（例如 `:otheractor`、`:deltaseconds`）；不要再使用旧文档里 `:"key with spaces"` 这种写法。
+- 若需要在 UE 5.6 Python 里为回归脚本构造 `UserDefinedEnum` 变量，注意 `EdGraphPinType.PinSubCategoryObject` 目前不可直接赋值；更稳妥的做法是复用已有父蓝图继承下来的枚举属性。
 - 对“异构多输出纯宏 -> FunctionGraph 后续参数消费”这类场景仍应谨慎，未验证前不要假定其已完全稳定。
+
+
 
 ---
 
@@ -238,11 +245,12 @@ print(result.file_path)
 ## BlueprintLisp DSL 速览
 
 ```scheme
-(event BeginPlay
+(event ReceiveBeginPlay
+  (call-parent ReceiveBeginPlay)
   (PrintString :instring "Hello"))
 
-(func OpenDoor)
-(function OpenDoor
+(func "Villager Select")
+(function "Villager Select"
   (branch (CanOpen)
     (then (PlayOpenAnimation))
     (else (PlayLockedSound))))
@@ -255,14 +263,18 @@ print(result.file_path)
     (else (exit :ReturnValue true))))
 ```
 
+
 **关键语法**：
 
-- `(event Name body...)` — EventGraph 事件节点
+- `(event Name body...)` — EventGraph 事件节点；`Name` 含空格时推荐写成字符串
 - `(func Name)` — 创建新的 FunctionGraph（通常与后续 `(function Name ...)` 配合）
 - `(function Name body...)` — 向指定函数图导入函数体
 - `(macro Name body...)` — 向已有宏图导入宏体
+- `(call-parent Name [:pin value]...)` — EventGraph 中的父类 override 调用
+- `call-macro` / `call-parent` / 顶层 `event` / `function` / `macro` 的名称若含空格，推荐直接写成字符串
 - `:event-id` / `:id` — 稳定 ID，用于增量更新
-- `:"key with spaces"` — 含空格或 Unicode 的 keyword 需加引号
+- keyword 目前保持无空格；对已有 pin/符号别名，导入侧会尽量兼容去空格匹配，但不要新写 `:"key with spaces"`
+
 
 ---
 
