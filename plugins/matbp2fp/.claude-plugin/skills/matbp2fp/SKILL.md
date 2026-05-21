@@ -101,6 +101,9 @@ result = unreal.MatBP2FPPythonBridge.update_material_from_file(
 ### 对照表查询（Mapping Registry）
 
 ```python
+import json
+import unreal
+
 # 获取完整对照表（JSON 数组）
 result = unreal.MatBP2FPPythonBridge.get_mapping_table()
 if result.b_success:
