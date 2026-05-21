@@ -1,13 +1,13 @@
 ---
 name: animbp2fp-mcp
-description: This skill should be used when working in AdvancedLocomotionSystemV and the task is to trigger AnimBP2FP or BlueprintLisp conversions through the `ue-editor-alsv` MCP connection, especially for export, import, update, round-trip validation, and EventGraph DSL generation.
+description: This skill should be used when working in AdvancedLocomotionSystemV and the task is to trigger AnimBP2FP or BlueprintLisp conversions through the UE Editor MCP connection, especially for export, import, update, round-trip validation, and EventGraph DSL generation.
 ---
 
 # AnimBP2FP MCP
 
 ## Overview
 
-在项目中，通过 MCP 触发 AnimBP2FP 转换`ue-editor-> execute_command -> unreal.AnimBP2FPPythonBridge`
+在项目中，通过 MCP 触发 AnimBP2FP 转换：使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具 → `unreal.AnimBP2FPPythonBridge`
 
 当前项目已经在 `AnimBP2FPEditor` 中补齐了 Python 暴露层：
 
@@ -29,7 +29,7 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 
 ## 强制约束
 
-1. 只使用 MCP`ue-editor` 连接编辑器及操作编辑器。
+1. 使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具来操作编辑器。
 2. 不要在 Python 里直接假设 `FAnimBPExporter` / `FAnimBPImporter` 这些静态类可见；应通过 `unreal.AnimBP2FPPythonBridge` 调用封装后的 `UFUNCTION`。
 3. 所有命令、路径、输出目录都使用绝对路径。
 
@@ -37,7 +37,7 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 
 ### Step 1: 先确认编辑器连接
 
-先检查 MCP `ue-editor` 是否已经连接到编辑器。如果编辑器未连接，不要继续执行转换。
+先调用编辑器状态查询工具确认编辑器已连接。如果编辑器未连接，不要继续执行转换。
 
 ### Step 2: 先选入口，再执行
 

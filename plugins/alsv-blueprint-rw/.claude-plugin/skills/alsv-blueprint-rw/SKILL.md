@@ -1,9 +1,9 @@
 ---
 name: alsv-blueprint-rw
-description: This skill should be used when working in AdvancedLocomotionSystemV and the task involves reading or writing AnimBlueprint assets through the `ue-editor-alsv` MCP connection — such as exporting a blueprint to DSL text, modifying DSL and writing it back, creating a new blueprint from DSL, or exporting the EventGraph as BlueprintLisp. This skill covers the complete read-write workflow using the in-process Python bridge (`unreal.AnimBP2FPPythonBridge`).
+description: This skill should be used when working in AdvancedLocomotionSystemV and the task involves reading or writing AnimBlueprint assets through the UE Editor MCP connection — such as exporting a blueprint to DSL text, modifying DSL and writing it back, creating a new blueprint from DSL, or exporting the EventGraph as BlueprintLisp. This skill covers the complete read-write workflow using the in-process Python bridge (`unreal.AnimBP2FPPythonBridge`).
 ---
 
-# ALSV Blueprint Read/Write via ue-editor-alsv
+# ALSV Blueprint Read/Write via UE Editor MCP
 
 ## 定位
 
@@ -14,7 +14,7 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 - 从 DSL 新建蓝图资产
 - 导出 EventGraph 的 BlueprintLisp 表示
 
-操作通道：`ue-editor-alsv` → `execute_command` → 编辑器主线程 Python → `unreal.AnimBP2FPPythonBridge`
+操作通道：使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具 → 编辑器主线程 Python → `unreal.AnimBP2FPPythonBridge`
 
 > **注意**：本 skill 面向单资产交互式读写，批量任务请改用 `animbp2fp-mcp` skill 的 commandlet 链路。
 
@@ -22,8 +22,8 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 
 ## 强制约束
 
-1. 只使用 `ue-editor-alsv` MCP server 连接 ALSV 编辑器，不使用 `unreal-mcp`。
-2. 操作前先调用 `get_editor_state` 确认编辑器在线。
+1. 使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具来操作编辑器。
+2. 操作前先调用编辑器状态查询工具确认编辑器在线。
 3. 不要直接调用 `FAnimBPExporter` / `FAnimBPImporter` C++ 静态类，只走 `unreal.AnimBP2FPPythonBridge`。
 4. 所有 UE 资产路径使用 `/Game/...` 格式，文件系统路径使用正斜杠。
 5. 如需保存蓝图到磁盘，在调用 import/update 时传 `save_package=True`。
@@ -38,7 +38,7 @@ description: This skill should be used when working in AdvancedLocomotionSystemV
 get_editor_state()
 ```
 
-返回 `is_connected: true` 才继续。如果未连接，先启动 ALSV 编辑器并等待加载完成（约 90 秒）。
+返回编辑器已连接才继续。如果未连接，先启动 ALSV 编辑器并等待加载完成（约 90 秒）。
 
 ---
 

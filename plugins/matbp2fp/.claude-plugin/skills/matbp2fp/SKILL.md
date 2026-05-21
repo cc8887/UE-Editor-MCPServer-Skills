@@ -13,16 +13,18 @@ description: Primary use: Parsing and understanding Unreal Engine (UE) Material 
 每当尝试读取材质蓝图时：尝试搜索蓝图对应的.matlang文件，通过直接解析.matlang实现对材质的理解。
 
 调用链路：
-`ue-editor → execute_command → unreal.MatBP2FPPythonBridge`
+使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具 → `unreal.MatBP2FPPythonBridge`
 
 Python 类名：`unreal.MatBP2FPPythonBridge`
+
+操作通道：使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具 → `unreal.MatBP2FPPythonBridge`
 
 ---
 
 ## 强制约束
 
-1. 使用 `ue-editor` MCP 连接编辑器（不要用其他的MCP）。
-2. 操作前先确认编辑器在线（`get_editor_state`）。
+1. 使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具来操作编辑器。
+2. 操作前先确认编辑器在线（调用编辑器状态查询工具）。
 3. 所有 UE 资产路径使用 `/...` 格式，文件系统路径使用正斜杠。
 4. 除了读写.matlang文件，其余操作均通过Python Bridge，利用python完成所有的操作
 5. 不要尝试通过直接读取材质蓝图的节点来理解蓝图

@@ -15,14 +15,14 @@ description: Use this skill when reading, modifying, or generating UE Blueprint 
 
 Python 类名：`unreal.BlueprintLispPythonBridge`
 
-操作通道：`ue-editor -> execute_command -> unreal.BlueprintLispPythonBridge`
+操作通道：使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具 → `unreal.BlueprintLispPythonBridge`
 
 ---
 
 ## 强制约束
 
-1. 只使用 MCP `ue-editor` 连接和操作编辑器。
-2. 操作前先确认编辑器在线（`get_editor_state`）。
+1. 使用能连接 UE 编辑器的 MCP，调用其执行 Python 代码的工具来操作编辑器。
+2. 操作前先调用编辑器状态查询工具确认编辑器在线。
 3. 资产路径使用 `/Game/...` 或 `/Game/....AssetName` 格式；Bridge 会做常见补全。
 4. 除 `.bplisp` 文件本身外，其余蓝图读写均通过 Python Bridge 完成，不要直接读蓝图节点来理解逻辑。
 5. 导入/更新前建议先备份蓝图资产。
@@ -53,7 +53,8 @@ Python 类名：`unreal.BlueprintLispPythonBridge`
 ### Step 1：确认编辑器在线
 
 ```python
-get_editor_state()  # is_connected == true 才继续
+# 调用编辑器状态查询工具，确认编辑器已连接才继续
+get_editor_state()
 ```
 
 ---
