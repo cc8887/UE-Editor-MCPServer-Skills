@@ -1,0 +1,5 @@
+{
+  "name": "ue-headless-automation",
+  "description": "Run Unreal Engine headlessly via Editor CMD with Automation RunTests; design plugins for command-line execution; verify -NullRHI compatibility",
+  "version": "1.0.0"
+}
