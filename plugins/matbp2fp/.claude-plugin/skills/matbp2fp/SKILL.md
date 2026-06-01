@@ -98,6 +98,32 @@ result = unreal.MatBP2FPPythonBridge.update_material_from_file(
 )
 ```
 
+> **重要：增量 patch 只在 Export-Edit-Import 回路中触发**
+>
+> Differ 用 `$id` 字符串作为"同一节点"的匹配 key。但 Exporter 每次都按 `$<typeprefix><counter>` 重新生成 ID，**不读取任何持久化字段**——所以你 DSL 里写的 `$base_color` / `$rim_fresnel` 这种语义 ID **在第一次 import 之后会丢失**，下次 Differ 把所有节点判成 Removed+Added，永远走 full rebuild。
+>
+> 详见 `Plugins/MatBP2FP/README.md` 的 "增量更新与 `$id` 稳定性" 一节。
+>
+> **正确 / 错误工作流对照：**
+>
+> ```python
+> # ❌ 错误：直接持有 DSL 编辑后推送 → 总是 full rebuild
+> my_dsl = '(material "M_X" ... (constant3-vector $color :value (1 0 0)) ...)'
+> unreal.MatBP2FPPythonBridge.update_material_from_text(path, my_dsl, True)
+>
+> # ✅ 正确：先 export，在导出文本上就地修改，再 import → 增量 patch
+> exp = unreal.MatBP2FPPythonBridge.export_material_to_text(path)
+> new_dsl = exp.dsl_text.replace(":default 0.5", ":default 0.85")
+> unreal.MatBP2FPPythonBridge.update_material_from_text(path, new_dsl, True)
+> ```
+>
+> **判断你走了哪条路径：** 检查返回结果里 `b_used_incremental_patch` 字段。
+>
+> **何时这个区分重要：**
+> - 大材质（≥ 几十节点）需要快速响应小改动 → 必须走 Export-Edit-Import；
+> - 下游观察生命周期事件（BlueprintAutoLayout / DrivenHighlight 等）希望看到精准的 Modified 事件而非全量 Added → 必须走 Export-Edit-Import；
+> - 你只关心材质最终内容、不在意节点 GUID 是否保留 → 任意路径都可以。
+
 ### 对照表查询（Mapping Registry）
 
 ```python
