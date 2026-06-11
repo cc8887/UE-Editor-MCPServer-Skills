@@ -9,14 +9,14 @@ description: Guide for running Unreal Engine in headless mode (-NullRHI, -Unatte
 
 ## When to Use
 
-| Scenario | Trigger |
-|----------|---------|
-| 设置 UE 项目的 CI/CD 自动化测试 | "如何在 CI 中跑 UE 自动化测试" |
-| 在无 GPU 服务器上运行 UE 功能 | "服务器没有显卡怎么运行 UE" |
-| 设计插件使其支持命令行启动 | "如何让插件只依赖 Editor CMD 就能跑" |
-| 验证某个功能是否兼容无头模式 | "这个功能能在 -NullRHI 下跑吗" |
-| 编写 Automation Test 并在命令行执行 | "怎么写 UE 自动化测试并命令行运行" |
-| 排查 Automation Test 失败原因 | "自动化测试跑不起来 / 报错" |
+| Scenario                   | Trigger                   |
+| -------------------------- | ------------------------- |
+| 设置 UE 项目的 CI/CD 自动化测试      | "如何在 CI 中跑 UE 自动化测试"      |
+| 在无 GPU 服务器上运行 UE 功能        | "服务器没有显卡怎么运行 UE"          |
+| 设计插件使其支持命令行启动              | "如何让插件只依赖 Editor CMD 就能跑" |
+| 验证某个功能是否兼容无头模式             | "这个功能能在 -NullRHI 下跑吗"     |
+| 编写 Automation Test 并在命令行执行 | "怎么写 UE 自动化测试并命令行运行"      |
+| 排查 Automation Test 失败原因    | "自动化测试跑不起来 / 报错"          |
 
 ---
 
@@ -32,27 +32,27 @@ UnrealEditor.exe MyProject.uproject \
     -ExecCmds="<command>; Quit"   # 注入控制台命令，执行后自动退出
 ```
 
-| 参数 | 作用 | 为什么重要 |
-|------|------|------------|
-| `-NullRHI` | 禁用渲染硬件接口 | 允许在没有 GPU 的服务器/CI 环境中运行；启动更快 |
-| `-Unattended` | 无人值守模式 | 跳过所有模态对话框（错误弹窗、确认框等），防止进程卡死 |
-| `-NoSplash` | 跳过启动画面 | 减少启动时间，CI 中不需要视觉反馈 |
-| `-ExecCmds` | 注入控制台命令 | 启动后自动执行命令，`Quit` 确保执行完后退出进程 |
+| 参数            | 作用       | 为什么重要                        |
+| ------------- | -------- | ---------------------------- |
+| `-NullRHI`    | 禁用渲染硬件接口 | 允许在没有 GPU 的服务器/CI 环境中运行；启动更快 |
+| `-Unattended` | 无人值守模式   | 跳过所有模态对话框（错误弹窗、确认框等），防止进程卡死  |
+| `-NoSplash`   | 跳过启动画面   | 减少启动时间，CI 中不需要视觉反馈           |
+| `-ExecCmds`   | 注入控制台命令  | 启动后自动执行命令，`Quit` 确保执行完后退出进程  |
 
 ### 1.2 常用 ExecCmds 组合
 
 ```bash
-# 运行所有 LuaToBPVM 命名空间下的自动化测试
+# 运行特定命名空间下的所有自动化测试
 UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
-    -ExecCmds="Automation RunTests LuaToBPVM; Quit"
+    -ExecCmds="Automation RunTests MyPlugin; Quit"
 
 # 运行单条精确测试
 UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
-    -ExecCmds="Automation RunTests LuaToBPVM.KismetCodegen.SimpleReturn; Quit"
+    -ExecCmds="Automation RunTests MyPlugin.Calculations.SimpleAddition; Quit"
 
 # 运行批量测试（All 是自定义的聚合测试）
 UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
-    -ExecCmds="Automation RunTests LuaToBPVM.KismetCodegen.All; Quit"
+    -ExecCmds="Automation RunTests MyPlugin.All; Quit"
 
 # 运行多个不相关的测试
 UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
@@ -231,22 +231,22 @@ UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended -ExecCmds="Qu
 
 ### 3.2 编译依赖检查
 
-| 检查项 | 如何验证 | 不通过的表现 |
-|--------|----------|-------------|
-| 模块是否在 Editor 构建中链接 | 检查 Build.cs 中 `Target.bBuildEditor` 条件 | 运行时找不到模块 |
-| 是否依赖 `AutomationTest` | 搜索 `IMPLEMENT_SIMPLE_AUTOMATION_TEST` | 测试无法注册 |
-| 是否依赖 Editor-only API | 搜索 `UnrealEd`、`LevelEditor`、`AssetTools` 等 Editor 模块引用 | 非 Editor 构建链接失败 |
+| 检查项                   | 如何验证                                                   | 不通过的表现          |
+| --------------------- | ------------------------------------------------------ | --------------- |
+| 模块是否在 Editor 构建中链接    | 检查 Build.cs 中 `Target.bBuildEditor` 条件                 | 运行时找不到模块        |
+| 是否依赖 `AutomationTest` | 搜索 `IMPLEMENT_SIMPLE_AUTOMATION_TEST`                  | 测试无法注册          |
+| 是否依赖 Editor-only API  | 搜索 `UnrealEd`、`LevelEditor`、`AssetTools` 等 Editor 模块引用 | 非 Editor 构建链接失败 |
 
 ### 3.3 运行时依赖检查
 
-| 检查项 | 搜索关键词 | 问题表现 | 修复方式 |
-|--------|-----------|---------|---------|
-| GPU/渲染依赖 | `GEngine->GameViewport`、`FSceneView`、`UGameViewportClient`、`GetWorld()->GetGameViewport()` | `-NullRHI` 下 crash 或 null deref | 添加 `nullptr` 检查，跳过渲染相关路径 |
-| 弹窗/对话框 | `FMessageDialog`、`OpenMsgDlgInt`、`FPlatformMisc::MessageBoxExt` | `-Unattended` 下卡住（等待用户点击） | 改为 `UE_LOG` + 返回值 |
-| 编辑器 UI | `FLevelEditorModule`、`SLevelViewport`、`FAssetEditorManager` | 启动 crash 或功能不可用 | 条件编译，提供命令行替代方案 |
-| 关卡加载 | `UGameplayStatics::OpenLevel`、`UWorld::ServerTravel`、`LoadMap` | `-NullRHI` 下关卡可能加载失败 | 使用 transient package 创建测试对象，避免依赖关卡 |
-| Slate UI | `SNew`、`FSlateApplication`、`AddWindow` | `-NullRHI` 下 Slate 可能不可用 | 避免在启动路径创建 Slate widget |
-| 文件对话框 | `IDesktopPlatform::OpenFileDialog`、`FPlatformMisc::FileDialog` | 卡住等待用户选择文件 | 用命令行参数传递文件路径 |
+| 检查项      | 搜索关键词                                                                                      | 问题表现                            | 修复方式                               |
+| -------- | ------------------------------------------------------------------------------------------ | ------------------------------- | ---------------------------------- |
+| GPU/渲染依赖 | `GEngine->GameViewport`、`FSceneView`、`UGameViewportClient`、`GetWorld()->GetGameViewport()` | `-NullRHI` 下 crash 或 null deref | 添加 `nullptr` 检查，跳过渲染相关路径           |
+| 弹窗/对话框   | `FMessageDialog`、`OpenMsgDlgInt`、`FPlatformMisc::MessageBoxExt`                            | `-Unattended` 下卡住（等待用户点击）       | 改为 `UE_LOG` + 返回值                  |
+| 编辑器 UI   | `FLevelEditorModule`、`SLevelViewport`、`FAssetEditorManager`                                | 启动 crash 或功能不可用                 | 条件编译，提供命令行替代方案                     |
+| 关卡加载     | `UGameplayStatics::OpenLevel`、`UWorld::ServerTravel`、`LoadMap`                             | `-NullRHI` 下关卡可能加载失败            | 使用 transient package 创建测试对象，避免依赖关卡 |
+| Slate UI | `SNew`、`FSlateApplication`、`AddWindow`                                                     | `-NullRHI` 下 Slate 可能不可用        | 避免在启动路径创建 Slate widget             |
+| 文件对话框    | `IDesktopPlatform::OpenFileDialog`、`FPlatformMisc::FileDialog`                             | 卡住等待用户选择文件                      | 用命令行参数传递文件路径                       |
 
 ### 3.4 日志验证
 
@@ -260,6 +260,7 @@ UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
 ```
 
 关键日志标记：
+
 - `LogAutomationController: ... Test Passed` — 测试通过
 - `LogAutomationController: Error: ... Test Failed` — 测试失败
 - `[FAIL]` — 自定义测试宏的失败标记
@@ -269,15 +270,15 @@ UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
 
 按顺序执行以下步骤，全部通过则功能确认支持无头 CMD：
 
-| 步骤 | 命令/操作 | 预期结果 |
-|------|----------|---------|
-| 1. 基础启动 | `UnrealEditor.exe Project.uproject -NoSplash -NullRHI -Unattended -ExecCmds="Quit"` | 进程正常退出，无 crash |
-| 2. 模块加载 | 检查日志中是否有模块加载成功的信息 | 日志包含 `LogModuleManager: ... Loaded MyPlugin` |
-| 3. 测试列表 | `-ExecCmds="Automation List; Quit"` | 输出中包含你的测试名称 |
-| 4. 单条测试 | `-ExecCmds="Automation RunTests MyPlugin.SimpleTest; Quit"` | 测试通过，无 crash |
-| 5. 批量测试 | `-ExecCmds="Automation RunTests MyPlugin.All; Quit"` | 所有测试通过 |
-| 6. 长时间运行 | 批量测试循环运行 10 次 | 无内存泄漏，无随机失败 |
-| 7. CI 集成 | 在 CI 环境中运行（通常无 GPU） | 与本地结果一致 |
+| 步骤       | 命令/操作                                                                               | 预期结果                                         |
+| -------- | ----------------------------------------------------------------------------------- | -------------------------------------------- |
+| 1. 基础启动  | `UnrealEditor.exe Project.uproject -NoSplash -NullRHI -Unattended -ExecCmds="Quit"` | 进程正常退出，无 crash                               |
+| 2. 模块加载  | 检查日志中是否有模块加载成功的信息                                                                   | 日志包含 `LogModuleManager: ... Loaded MyPlugin` |
+| 3. 测试列表  | `-ExecCmds="Automation List; Quit"`                                                 | 输出中包含你的测试名称                                  |
+| 4. 单条测试  | `-ExecCmds="Automation RunTests MyPlugin.SimpleTest; Quit"`                         | 测试通过，无 crash                                 |
+| 5. 批量测试  | `-ExecCmds="Automation RunTests MyPlugin.All; Quit"`                                | 所有测试通过                                       |
+| 6. 长时间运行 | 批量测试循环运行 10 次                                                                       | 无内存泄漏，无随机失败                                  |
+| 7. CI 集成 | 在 CI 环境中运行（通常无 GPU）                                                                 | 与本地结果一致                                      |
 
 ---
 
@@ -346,6 +347,7 @@ Error: No tests found matching 'MyPlugin'
 ```
 
 **原因**：
+
 - 模块未被加载（检查 Build.cs 和 .uplugin/.uproject 中的模块注册）
 - 测试文件未编译进 Editor 构建（检查 `Target.bBuildEditor` 条件）
 - `IMPLEMENT_SIMPLE_AUTOMATION_TEST` 的路径字符串写错了
@@ -362,14 +364,135 @@ UE Editor 的退出码反映的是 Editor 进程本身是否正常退出，**不
 
 ---
 
-## 参考：LuaToBPVM 项目的测试架构
+## Part 6: 如何添加自定义控制台命令（供 `-ExecCmds` 调用）
 
-LuaToBPVM 是遵循本指南的完整实例：
+`-ExecCmds` 实际上就是向引擎注入控制台命令。你可以注册自定义命令，让无头模式下执行任意逻辑。UE 提供了三种注册方式：
 
-- **测试框架**：UE Automation Test（`IMPLEMENT_SIMPLE_AUTOMATION_TEST`）
-- **测试注册**：自定义 `LUA_AUTOMATION_TEST` 宏，命名空间 `LuaToBPVM.KismetCodegen.*`
-- **运行命令**：`UnrealEditor.exe LuaToBPVM.uproject -NoSplash -NullRHI -Unattended -ExecCmds="Automation RunTests LuaToBPVM; Quit"`
-- **Build.cs**：`if (Target.bBuildEditor) { PrivateDependencyModuleNames.Add("AutomationTest"); }`
-- **测试数据**：Lua 源码内联为 C++ 字符串，零文件 I/O 依赖
-- **编译时验证**：`FOpEmitterAccessTest.h` 用 `#if`/`#error` 在编译期检查头文件可访问性
-- **测试总数**：约 116 条，全部在无头 CMD 下可运行
+### 6.1 方式一：`IConsoleManager::RegisterConsoleCommand`（手动注册）
+
+在模块的 `StartupModule()` 或构造函数中调用，适合需要动态管理生命周期的场景：
+
+```cpp
+#include "HAL/IConsoleManager.h"
+
+void FMyModule::StartupModule()
+{
+    // 注册无参数命令
+    IConsoleManager::Get().RegisterConsoleCommand(
+        TEXT("MyPlugin.DoSomething"),
+        TEXT("Do something useful"),
+        FConsoleCommandDelegate::CreateLambda([]()
+        {
+            UE_LOG(LogTemp, Log, TEXT("MyPlugin.DoSomething executed!"));
+        }),
+        ECVF_Default
+    );
+
+    // 注册带参数的命令
+    IConsoleManager::Get().RegisterConsoleCommand(
+        TEXT("MyPlugin.DoSomethingWithArgs"),
+        TEXT("Do something with arguments. Usage: MyPlugin.DoSomethingWithArgs <Value>"),
+        FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args)
+        {
+            for (const FString& Arg : Args)
+            {
+                UE_LOG(LogTemp, Log, TEXT("Arg: %s"), *Arg);
+            }
+        }),
+        ECVF_Default
+    );
+}
+```
+
+**启动时调用**：
+```bash
+UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
+    -ExecCmds="MyPlugin.DoSomething; MyPlugin.DoSomethingWithArgs hello world; Quit"
+```
+
+### 6.2 方式二：`FAutoConsoleCommand`（静态全局注册——推荐）
+
+构造即注册，销毁即注销。在 .cpp 文件中定义为静态/全局变量，最简单：
+
+```cpp
+#include "HAL/IConsoleManager.h"
+
+// 无参数命令
+static FAutoConsoleCommand GMyPluginDoSomething(
+    TEXT("MyPlugin.DoSomething"),
+    TEXT("Do something useful"),
+    FConsoleCommandDelegate::CreateLambda([]()
+    {
+        UE_LOG(LogTemp, Log, TEXT("MyPlugin.DoSomething executed!"));
+    })
+);
+
+// 带参数命令
+static FAutoConsoleCommand GMyPluginDoSomethingWithArgs(
+    TEXT("MyPlugin.DoSomethingWithArgs"),
+    TEXT("Do something with arguments. Usage: MyPlugin.DoSomethingWithArgs <Value>"),
+    FConsoleCommandWithArgsDelegate::CreateLambda([](const TArray<FString>& Args)
+    {
+        for (const FString& Arg : Args)
+        {
+            UE_LOG(LogTemp, Log, TEXT("Arg: %s"), *Arg);
+        }
+    })
+);
+```
+
+**`FAutoConsoleCommand` 支持的委托类型**：
+
+| 委托类型 | 用途 |
+|----------|------|
+| `FConsoleCommandDelegate` | 无参数、无返回值 |
+| `FConsoleCommandWithArgsDelegate` | 接收 `const TArray<FString>&` 参数 |
+| `FConsoleCommandWithWorldDelegate` | 接收 `UWorld*`（适合需要 World 上下文的命令） |
+| `FConsoleCommandWithOutputDeviceDelegate` | 接收 `FOutputDevice&`（可自定义输出目标） |
+| `FConsoleCommandWithWorldArgsAndOutputDeviceDelegate` | 全部组合 |
+
+### 6.3 方式三：`UFUNCTION(Exec)`（UObject 成员函数）
+
+在 `UObject` 派生类（如 `UGameInstance`、`APlayerController`、`UCheatManager` 等）中直接声明：
+
+```cpp
+// MyGameInstance.h
+UCLASS()
+class UMyGameInstance : public UGameInstance
+{
+    GENERATED_BODY()
+
+    UFUNCTION(Exec)
+    void MyCustomCommand();
+};
+
+// MyGameInstance.cpp
+void UMyGameInstance::MyCustomCommand()
+{
+    UE_LOG(LogTemp, Log, TEXT("MyCustomCommand executed via Exec!"));
+}
+```
+
+**限制**：
+- 必须是 `UObject` 派生类成员
+- 仅在 `UGameInstance`、`APlayerController`、`APawn`、`AHUD`、`UCheatManager` 等特定类中自动生效
+- 更适合 Runtime/Game 模式，Editor 模式下需要确保 Exec 链可达
+- **若要在 Editor 无头 CMD 下稳定使用，推荐方式一或二（全局注册）**
+
+### 6.4 标志位说明（`ECVF_*`）
+
+```cpp
+ECVF_Default      // 默认，发布版和开发版都可用
+ECVF_Cheat        // 作弊命令，仅在开发版可用
+ECVF_ReadOnly     // 只读变量
+ECVF_SetByConsole // 可通过控制台修改
+```
+
+### 6.5 在无头模式下混合自定义命令与自动化测试
+
+常见的无头工作流：先执行自定义设置命令，再跑测试：
+
+```bash
+UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
+    -ExecCmds="MyPlugin.PreTestSetup; Automation RunTests MyPlugin.All; MyPlugin.PostTestCleanup; Quit"
+```
