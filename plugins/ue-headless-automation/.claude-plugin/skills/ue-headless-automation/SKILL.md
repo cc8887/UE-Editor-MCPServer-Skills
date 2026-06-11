@@ -496,3 +496,95 @@ ECVF_SetByConsole // 可通过控制台修改
 UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
     -ExecCmds="MyPlugin.PreTestSetup; Automation RunTests MyPlugin.All; MyPlugin.PostTestCleanup; Quit"
 ```
+
+---
+
+## Part 7: 使用 Commandlet 实现纯命令行任务（`-run=`）
+
+`-ExecCmds` 适合在启动后注入控制台命令，但对于**无需编辑器完整初始化的纯数据处理任务**，更推荐 `-run=` + `UCommandlet`：
+
+```bash
+UnrealEditor.exe MyProject.uproject -run=MyTask -param1=value1 -param2=value2
+```
+
+### 7.1 最简实现
+
+```cpp
+// MyTaskCommandlet.h
+#pragma once
+#include "Commandlets/Commandlet.h"
+#include "MyTaskCommandlet.generated.h"
+
+UCLASS()
+class UMyTaskCommandlet : public UCommandlet
+{
+    GENERATED_UCLASS_BODY()
+    virtual int32 Main(const FString& Params) override;
+};
+```
+
+```cpp
+// MyTaskCommandlet.cpp
+#include "MyTaskCommandlet.h"
+
+UMyTaskCommandlet::UMyTaskCommandlet()
+{
+    IsClient = false;     // 不需要客户端上下文
+    IsServer = false;     // 不需要服务器上下文
+    IsEditor = true;      // 需要 Editor 引擎（加载资产、蓝图等）
+    LogToConsole = true;  // 日志直接输出到 stdout
+    ShowErrorCount = true;
+    FastExit = true;      // Main 返回后立即退出，跳过引擎 shutdown
+    UseCommandletResultAsExitCode = true;  // Main 返回值直接作为进程退出码
+}
+
+int32 UMyTaskCommandlet::Main(const FString& Params)
+{
+    // 解析参数
+    TArray<FString> Tokens, Switches;
+    UCommandlet::ParseCommandLine(*Params, Tokens, Switches);
+
+    UE_LOG(LogTemp, Log, TEXT("Running MyTask with %d tokens"), Tokens.Num());
+    // ... 执行任务 ...
+    return 0;  // 0 = 成功，非 0 = 失败
+}
+```
+
+### 7.2 关键配置项
+
+| 属性 | 默认值 | 说明 |
+|------|--------|------|
+| `IsEditor` | `true` | `true`→用 `UEditorEngine`（可加载资产）；`false`→用 `UGameEngine` |
+| `IsClient` | `true` | 是否需要客户端 Context |
+| `IsServer` | `true` | 是否需要服务器 Context |
+| `LogToConsole` | `false` | `true`→日志直接打印到 stdout（CI 友好） |
+| `ShowErrorCount` | `true` | 退出时显示 Error/Warning 计数 |
+| `FastExit` | `false` | `true`→Main 返回后立即退出，跳过引擎 shutdown |
+| `UseCommandletResultAsExitCode` | `false` | `true`→Main 返回值直接作为进程退出码 |
+
+### 7.3 参数解析
+
+```cpp
+// Params = "-Verify -Path=D:/Data -Filter=*.uasset"
+int32 UMyTaskCommandlet::Main(const FString& Params)
+{
+    TArray<FString> Tokens;   // 无键值的纯值（如 "foo"）
+    TMap<FString, FString> Switches;  // -Key=Value 对
+    UCommandlet::ParseCommandLine(*Params, Tokens, Switches);
+
+    bool bVerify = Switches.Contains(TEXT("Verify"));
+    FString Path = Switches.FindRef(TEXT("Path"));
+    FString Filter = Switches.FindRef(TEXT("Filter"));
+    // ...
+}
+```
+
+### 7.4 Commandlet vs `-ExecCmds` 对比
+
+| 维度 | Commandlet (`-run=`) | `-ExecCmds` |
+|------|---------------------|-------------|
+| 引擎启动 | 可跳过不必要的上下文（IsClient/IsEditor 控制） | 完整引擎启动 |
+| 适用场景 | 批处理、资产加工、数据迁移、Cook | 运行测试、设置环境、触发逻辑 |
+| 退出控制 | `Main()` 返回值直接作为退出码 | 需额外 `Quit` 命令 |
+| 编写方式 | 继承 `UCommandlet` 实现 `Main()` | 注册控制台命令（见 Part 6） |
+| 实例 | `-run=cook`、`-run=resavepackages` | `Automation RunTests` |
