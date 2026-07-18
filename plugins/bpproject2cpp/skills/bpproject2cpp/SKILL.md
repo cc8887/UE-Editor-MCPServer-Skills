@@ -1,6 +1,6 @@
 ---
 name: bpproject2cpp
-description: Primary use: Converting pure Blueprint UE projects to C++ projects. Generates Source/, Build.cs, Target.cs, .h/.cpp, .sln/.vcxproj via UnrealBuildTool command line, without opening the editor. Also supports adding new C++ classes, adding plugin modules, compiling, and updating project files.
+description: "Primary use: Converting pure Blueprint UE projects to C++ projects. Generates Source/, Build.cs, Target.cs, .h/.cpp, .sln/.vcxproj via UnrealBuildTool command line, without opening the editor. Also supports adding new C++ classes, adding plugin modules, compiling, and updating project files."
 ---
 
 **bpproject2cpp** converts pure Blueprint UE projects to C++ projects entirely from the command line.
@@ -32,6 +32,8 @@ description: Primary use: Converting pure Blueprint UE projects to C++ projects.
 5. **Read `.uproject`** before any operation to check current state (existing modules, plugins, etc.).
 6. **Do NOT delete** existing `Source/` directories or `.sln` files without explicit user confirmation.
 7. **Target.cs must be in `Source/` (top-level), NOT in `Source/{ModuleName}/`** — UBT uses `TopDirectoryOnly` search for `*.Target.cs`.
+8. **Match engine settings** — Read `Build.version` and inspect the engine's target-setting enums; use only values it supports.
+9. **Confirm upgrades** — Compare `EngineAssociation` with the resolved engine version; explain the impact and obtain confirmation before changing it.
 
 ---
 
@@ -124,8 +126,7 @@ public class {ProjectName}Target : TargetRules
     public {ProjectName}Target(TargetInfo Target) : base(Target)
     {
         Type = TargetType.Game;
-        DefaultBuildSettings = BuildSettingsVersion.V5;
-        IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_6;
+		// Set versioned build options only after checking this engine's supported values.
         ExtraModuleNames.AddRange(new string[] { "{ModuleName}" });
     }
 }
@@ -141,8 +142,7 @@ public class {ProjectName}EditorTarget : TargetRules
     public {ProjectName}EditorTarget(TargetInfo Target) : base(Target)
     {
         Type = TargetType.Editor;
-        DefaultBuildSettings = BuildSettingsVersion.V5;
-        IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_6;
+		// Set versioned build options only after checking this engine's supported values.
         ExtraModuleNames.AddRange(new string[] { "{ModuleName}" });
     }
 }
@@ -332,7 +332,7 @@ void A{ClassName}::Tick(float DeltaTime)
 |-------|-------|-----|
 | `CS0101: already contains a definition` | Stale `Intermediate/Source/*.cs` cache conflicts with new Source files | Delete `Intermediate/Source/` and `Intermediate/Build/BuildRules/` |
 | `has no code, but is being treated as a code-based project` | Target.cs in wrong location (e.g., `Source/ModuleName/` instead of `Source/`) | Move Target.cs to `Source/` top-level |
-| `bStrictConformanceMode: False != True` | Old BuildSettingsVersion (V2) conflicts with engine defaults | Use `BuildSettingsVersion.V5` in Target.cs |
+| Target build-setting conflict | Target settings do not match the engine defaults | Inspect the engine's supported target-setting enums |
 | `Source/ already exists` | Project already has C++ | Check existing modules, skip or warn |
 | `EngineAssociation` not found | Custom/invalid engine path | Ask user for engine root |
 | `GenerateProjectFiles.bat` not found | Wrong engine root | Re-resolve engine path |
@@ -357,12 +357,8 @@ Most common issue. UBT caches `.cs` files in `Intermediate/Source/`. When you ad
 UBT creates temporary Target.cs in `Intermediate/Source/` when it can't find real ones. This conflicts with manually created files.
 **Root cause**: Target.cs must be at `Source/*.Target.cs`, not `Source/ModuleName/*.Target.cs`.
 
-### BuildSettings Version Warnings
-UE 5.5+ defaults have changed. Always use:
-```csharp
-DefaultBuildSettings = BuildSettingsVersion.V5;
-IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_6;
-```
+### Build-Settings Warnings
+Read `Engine/Build/Build.version`, then inspect the engine's target-setting enums and use only supported values.
 
 ### Module Name Mismatch
 The module name in `Build.cs`, `Target.cs` (ExtraModuleNames), and `.uproject` Modules array must all match exactly (case-sensitive).
