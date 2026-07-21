@@ -55,6 +55,18 @@
       "license": "MIT",
       "keywords": ["unreal-engine", "material", "matlang", "dsl", "ai"],
       "strict": true
+    },
+    {
+      "name": "ue-plugin-build-load",
+      "description": "Prevent mixed Unreal plugin builds and diagnose module, receipt, manifest, BuildId, NullRHI, and EditorMCP loading failures",
+      "version": "1.0.0",
+      "source": "./plugins/ue-plugin-build-load",
+      "author": {
+        "name": "cc8887"
+      },
+      "license": "MIT",
+      "keywords": ["unreal-engine", "plugin", "build", "ubt", "nullrhi", "editormcp"],
+      "strict": true
     }
   ]
 }

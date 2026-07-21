@@ -1,0 +1,5 @@
+{
+  "name": "ue-plugin-build-load",
+  "description": "Prevent and diagnose mixed, stale, partial, or incompatible Unreal Engine plugin builds",
+  "version": "1.0.0"
+}

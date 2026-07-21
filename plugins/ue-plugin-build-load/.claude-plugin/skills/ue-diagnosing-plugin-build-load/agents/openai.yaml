@@ -1,0 +1,4 @@
+interface:
+  display_name: "UE Plugin Build and Load"
+  short_description: "Prevent mixed Unreal plugin builds and load failures"
+  default_prompt: "Use $ue-diagnosing-plugin-build-load to build all Unreal project plugins through one verified Editor target."
