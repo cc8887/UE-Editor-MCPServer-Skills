@@ -12,6 +12,7 @@ Skills marketplace for [UE-Editor-MCPServer](https://github.com/cc8887/UE-Editor
 | **blueprint-lisp** | BlueprintLisp DSL for any Blueprint graph |
 | **matbp2fp** | Material to MatLang DSL conversion |
 | **bpproject2cpp** | Convert pure Blueprint UE projects to C++ projects, generate Source/, .sln and compile without editor |
+| **ue-headless-automation** | Headless Unreal Editor automation guide (-NullRHI, -Unattended, Automation RunTests, commandlets) |
 | **ue-plugin-build-load** | Prevent mixed or stale UE plugin builds and verify Editor-target receipts, manifests, DLLs and BuildIds |
 
 ## Prerequisites
