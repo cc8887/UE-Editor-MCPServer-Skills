@@ -78,7 +78,7 @@ Read the `.uproject` file's `EngineAssociation` field:
 ```python
 import os, json
 
-uproject_path = "E:/Project/MyProject.uproject"
+uproject_path = "<PROJECT_ROOT>/MyProject.uproject"
 project_dir = os.path.dirname(uproject_path)
 project_name = os.path.splitext(os.path.basename(uproject_path))[0]
 

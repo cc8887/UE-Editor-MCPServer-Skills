@@ -15,3 +15,7 @@ Intermediate/
 DerivedDataCache/
 Saved/
 *.sln
+
+# Session temp / desens tooling
+.box-desens/
+.session_tmps/

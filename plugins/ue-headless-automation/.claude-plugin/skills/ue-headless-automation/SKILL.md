@@ -289,11 +289,11 @@ UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
 ```powershell
 # run_tests.ps1
 param(
-    [string]$ProjectPath = "E:\MyProject\MyProject.uproject",
+    [string]$ProjectPath = "<PROJECT_ROOT>/MyProject.uproject",
     [string]$TestFilter = "MyPlugin"
 )
 
-$UE_EDITOR = "D:\UnrealEngine\Engine\Binaries\Win64\UnrealEditor.exe"
+$UE_EDITOR = "<UE_ENGINE_ROOT>/Engine/Binaries/Win64/UnrealEditor.exe"
 $LOG_FILE = "test_output_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 
 & $UE_EDITOR $ProjectPath `
@@ -405,6 +405,7 @@ void FMyModule::StartupModule()
 ```
 
 **启动时调用**：
+
 ```bash
 UnrealEditor.exe MyProject.uproject -NoSplash -NullRHI -Unattended \
     -ExecCmds="MyPlugin.DoSomething; MyPlugin.DoSomethingWithArgs hello world; Quit"
@@ -443,13 +444,13 @@ static FAutoConsoleCommand GMyPluginDoSomethingWithArgs(
 
 **`FAutoConsoleCommand` 支持的委托类型**：
 
-| 委托类型 | 用途 |
-|----------|------|
-| `FConsoleCommandDelegate` | 无参数、无返回值 |
-| `FConsoleCommandWithArgsDelegate` | 接收 `const TArray<FString>&` 参数 |
-| `FConsoleCommandWithWorldDelegate` | 接收 `UWorld*`（适合需要 World 上下文的命令） |
-| `FConsoleCommandWithOutputDeviceDelegate` | 接收 `FOutputDevice&`（可自定义输出目标） |
-| `FConsoleCommandWithWorldArgsAndOutputDeviceDelegate` | 全部组合 |
+| 委托类型                                                  | 用途                              |
+| ----------------------------------------------------- | ------------------------------- |
+| `FConsoleCommandDelegate`                             | 无参数、无返回值                        |
+| `FConsoleCommandWithArgsDelegate`                     | 接收 `const TArray<FString>&` 参数  |
+| `FConsoleCommandWithWorldDelegate`                    | 接收 `UWorld*`（适合需要 World 上下文的命令） |
+| `FConsoleCommandWithOutputDeviceDelegate`             | 接收 `FOutputDevice&`（可自定义输出目标）   |
+| `FConsoleCommandWithWorldArgsAndOutputDeviceDelegate` | 全部组合                            |
 
 ### 6.3 方式三：`UFUNCTION(Exec)`（UObject 成员函数）
 
@@ -474,6 +475,7 @@ void UMyGameInstance::MyCustomCommand()
 ```
 
 **限制**：
+
 - 必须是 `UObject` 派生类成员
 - 仅在 `UGameInstance`、`APlayerController`、`APawn`、`AHUD`、`UCheatManager` 等特定类中自动生效
 - 更适合 Runtime/Game 模式，Editor 模式下需要确保 Exec 链可达
@@ -552,20 +554,20 @@ int32 UMyTaskCommandlet::Main(const FString& Params)
 
 ### 7.2 关键配置项
 
-| 属性 | 默认值 | 说明 |
-|------|--------|------|
-| `IsEditor` | `true` | `true`→用 `UEditorEngine`（可加载资产）；`false`→用 `UGameEngine` |
-| `IsClient` | `true` | 是否需要客户端 Context |
-| `IsServer` | `true` | 是否需要服务器 Context |
-| `LogToConsole` | `false` | `true`→日志直接打印到 stdout（CI 友好） |
-| `ShowErrorCount` | `true` | 退出时显示 Error/Warning 计数 |
-| `FastExit` | `false` | `true`→Main 返回后立即退出，跳过引擎 shutdown |
-| `UseCommandletResultAsExitCode` | `false` | `true`→Main 返回值直接作为进程退出码 |
+| 属性                              | 默认值     | 说明                                                      |
+| ------------------------------- | ------- | ------------------------------------------------------- |
+| `IsEditor`                      | `true`  | `true`→用 `UEditorEngine`（可加载资产）；`false`→用 `UGameEngine` |
+| `IsClient`                      | `true`  | 是否需要客户端 Context                                         |
+| `IsServer`                      | `true`  | 是否需要服务器 Context                                         |
+| `LogToConsole`                  | `false` | `true`→日志直接打印到 stdout（CI 友好）                            |
+| `ShowErrorCount`                | `true`  | 退出时显示 Error/Warning 计数                                  |
+| `FastExit`                      | `false` | `true`→Main 返回后立即退出，跳过引擎 shutdown                       |
+| `UseCommandletResultAsExitCode` | `false` | `true`→Main 返回值直接作为进程退出码                                |
 
 ### 7.3 参数解析
 
 ```cpp
-// Params = "-Verify -Path=D:/Data -Filter=*.uasset"
+// Params = "-Verify -Path=<DATA_PATH> -Filter=*.uasset"
 int32 UMyTaskCommandlet::Main(const FString& Params)
 {
     TArray<FString> Tokens;   // 无键值的纯值（如 "foo"）
@@ -581,10 +583,10 @@ int32 UMyTaskCommandlet::Main(const FString& Params)
 
 ### 7.4 Commandlet vs `-ExecCmds` 对比
 
-| 维度 | Commandlet (`-run=`) | `-ExecCmds` |
-|------|---------------------|-------------|
-| 引擎启动 | 可跳过不必要的上下文（IsClient/IsEditor 控制） | 完整引擎启动 |
-| 适用场景 | 批处理、资产加工、数据迁移、Cook | 运行测试、设置环境、触发逻辑 |
-| 退出控制 | `Main()` 返回值直接作为退出码 | 需额外 `Quit` 命令 |
-| 编写方式 | 继承 `UCommandlet` 实现 `Main()` | 注册控制台命令（见 Part 6） |
-| 实例 | `-run=cook`、`-run=resavepackages` | `Automation RunTests` |
+| 维度   | Commandlet (`-run=`)              | `-ExecCmds`           |
+| ---- | --------------------------------- | --------------------- |
+| 引擎启动 | 可跳过不必要的上下文（IsClient/IsEditor 控制）  | 完整引擎启动                |
+| 适用场景 | 批处理、资产加工、数据迁移、Cook                | 运行测试、设置环境、触发逻辑        |
+| 退出控制 | `Main()` 返回值直接作为退出码               | 需额外 `Quit` 命令         |
+| 编写方式 | 继承 `UCommandlet` 实现 `Main()`      | 注册控制台命令（见 Part 6）     |
+| 实例   | `-run=cook`、`-run=resavepackages` | `Automation RunTests` |
