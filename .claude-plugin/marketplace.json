@@ -57,6 +57,18 @@
       "strict": true
     },
     {
+      "name": "auto-test-tools",
+      "description": "AutoTestTools 的 Unreal Editor 业务可测性约束与按功能分类的自动化测试 skill 组",
+      "version": "1.0.0",
+      "source": "./plugins/auto-test-tools",
+      "author": {
+        "name": "cc8887"
+      },
+      "license": "MIT",
+      "keywords": ["unreal-engine", "automation", "pie", "nullrhi", "python"],
+      "strict": true
+    },
+    {
       "name": "ue-plugin-build-load",
       "description": "Prevent mixed Unreal plugin builds and diagnose module, receipt, manifest, BuildId, NullRHI, and EditorMCP loading failures",
       "version": "1.0.0",

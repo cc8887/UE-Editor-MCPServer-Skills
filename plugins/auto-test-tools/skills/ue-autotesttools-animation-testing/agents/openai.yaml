@@ -1,0 +1,4 @@
+interface:
+  display_name: "AutoTestTools 动画测试"
+  short_description: "用于实现、审查或测试 Montage、状态机与 Notify 行为"
+  default_prompt: "使用 $ue-autotesttools-animation-testing 设计可测的动画行为或编写对应自动化测试。"

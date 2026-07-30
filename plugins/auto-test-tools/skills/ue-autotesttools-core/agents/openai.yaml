@@ -1,0 +1,4 @@
+interface:
+  display_name: "AutoTestTools 可测性核心"
+  short_description: "用于设计、实现或审查需要保持可测的 Unreal Editor 业务"
+  default_prompt: "使用 $ue-autotesttools-core 审查当前 Unreal Editor 业务设计是否满足 AutoTestTools 的可测性约束。"

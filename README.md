@@ -8,7 +8,7 @@ Skills marketplace for [UE-Editor-MCPServer](https://github.com/cc8887/UE-Editor
 |--------|-------------|
 | **alsv-blueprint-rw** | Read/write AnimBlueprint assets via in-process Python Bridge |
 | **animbp2fp-mcp** | AnimBP2FP conversion through MCP (export, import, round-trip) |
-| **auto-test-tools** | PIE/session automation slices for Unreal Editor testing, including input and animation regression workflows |
+| **auto-test-tools** | 按 Core、Actor、Enhanced Input、Animation 和 Motion Matching 分类的可测性约束与测试编写 skills |
 | **blueprint-lisp** | BlueprintLisp DSL for any Blueprint graph |
 | **matbp2fp** | Material to MatLang DSL conversion |
 | **bpproject2cpp** | Convert pure Blueprint UE projects to C++ projects, generate Source/, .sln and compile without editor |

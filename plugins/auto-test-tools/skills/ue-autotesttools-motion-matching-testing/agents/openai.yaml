@@ -1,0 +1,4 @@
+interface:
+  display_name: "AutoTestTools Motion Matching 测试"
+  short_description: "用于实现、审查或测试 PoseSearch 与 Motion Matching 行为"
+  default_prompt: "使用 $ue-autotesttools-motion-matching-testing 设计可测的 Motion Matching 行为或编写对应自动化测试。"

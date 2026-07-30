@@ -1,0 +1,4 @@
+interface:
+  display_name: "AutoTestTools 输入测试"
+  short_description: "用于实现、审查或测试 Enhanced Input 与物理输入行为"
+  default_prompt: "使用 $ue-autotesttools-input-testing 设计可测的输入行为或编写对应自动化测试。"

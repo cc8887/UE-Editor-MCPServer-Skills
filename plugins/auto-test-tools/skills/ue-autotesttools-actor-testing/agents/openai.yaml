@@ -1,0 +1,4 @@
+interface:
+  display_name: "AutoTestTools Actor 测试"
+  short_description: "用于实现、审查或测试 Actor、组件、属性与生命周期行为"
+  default_prompt: "使用 $ue-autotesttools-actor-testing 设计可测的 Actor 行为或编写对应自动化测试。"
