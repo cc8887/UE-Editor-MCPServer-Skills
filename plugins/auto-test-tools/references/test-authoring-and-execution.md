@@ -119,6 +119,37 @@ await wait_until(
 
 ## Editor 内执行
 
+### 通过 Unreal Editor MCP 执行
+
+使用支持等待协程的 UE-Editor-MCPServer 时，`execute_command` 和 `excute_file`
+会执行脚本，并等待脚本顶层的 `async def main()` 返回。等待由 Editor Tick 推进，
+返回值应可 JSON 序列化。同步脚本仍可使用，不要用同步 sleep 等待 PIE 或测试结束。
+
+1. 原生代码变更后，在 Editor 关闭时调用宿主侧 `build_project`，等待完整 Editor
+   目标构建。成功直接消费状态；失败用 `read_artifact` 读取错误行附近，禁止测试旧 DLL。
+   该工具不代替项目要求的插件版本与构建产物审计。
+2. `open_editor` 等待实际 MCP ping 成功后返回 READY，并附带最小协程示例。
+   首次连接或排查调度问题时运行一次，
+   确认 `completed=true` 和 `ticks_during_await>0`；不必在每个用例前重复验证。
+3. 将一轮测试的启动、条件等待、结果读取和清理组织在一次 `async def main()` 调用中。
+   `Automation RunTest` 只表示提交测试，不能直接当作完成。等待本次测试的完成状态或
+   新生成的结果文件，设置超时，再检查核心断言与通过数量。不可接受上次运行遗留结果。
+4. 原生日志捕获覆盖整个 await。先读取工具直接返回的结果摘要；日志较长时保存在
+   项目 `Saved/Logs/MCP`，按需使用返回路径读取小段日志，避免反复扫描整份 Editor 日志。
+5. 在 `finally` 或测试上下文退出时释放自身 PIE、回调与临时设置。协程结束并回传
+   结果后再从宿主调用 `close_editor`；不要在仍等待返回的 Editor Python 中关闭进程。
+
+最小调度检查示例不代表业务测试通过；真正测试仍按本文的声明、发现和 provider 边界执行。
+UI 截图只在验证需要时读取，优先保留能辨认被测控件的局部图，整屏原图可留在磁盘。
+
+`MCP_EXECUTION_TIMEOUT` 是 Editor 侧协程执行上限，默认 86400 秒，配置为有限正数。
+脚本自身仍应设置与业务匹配的条件等待超时。客户端 MCP 请求超时和外层工具执行的
+提前返回阈值是另外两层：延长 MCP 超时不会阻止外层先返回“仍在运行”。优先配置外层
+等待完成；必要时等待同一次调用，不要重启 Editor 或重新提交测试。
+
+旧版服务不会自动等待 `main()`，先检查工具描述或启动示例是否声明支持这一契约。
+不要在旧版服务上用 `create_task` 后立刻返回来声称测试已经完成。
+
 在 **Tools > Test Automation** 中刷新并运行 `Project.AutoTest` 下的条目。也可在 Editor 控制台运行整个前缀：
 
 ```text

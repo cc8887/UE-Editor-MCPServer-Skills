@@ -67,6 +67,28 @@ Without at least one C++ source file (`.h` + `.cpp`) in the module directory, UB
 
 ## Core Workflow
 
+### Existing MCP build host
+
+When UE-Editor-MCPServer is already configured with this project's `EDITOR_PROJECT`
+and exposes `build_project`, use that host-side tool for the complete Editor target
+build. It does not require or open the Editor, so the command-line-only constraint
+still applies. Source scaffolding and project conversion remain this skill's work.
+
+- Close the project's Editor before building. Call `build_project` once and await
+  its result; do not start separate status polling or reread a successful build log.
+- Require `status=succeeded` and `exit_code=0`. On failure, inspect `log_path` around
+  the returned `error_lines` using `read_artifact(path, start_line, line_count)`.
+  Those are 1-based build-log line numbers, not C++ source line numbers. A failed
+  exit with an empty error array is still failure.
+- `refresh_makefile=true` backs up only the target's project-local Makefile.bin.
+  Use it when cached dependency discovery misses added or deleted sources; it is
+  not a full cache clean and does not remove compiled objects or shared outputs.
+- This tool resolves the engine from the configured project and builds the full
+  Win64 Development Editor target. It does not replace project conversion, engine
+  identity checks, or any separately required plugin receipt/manifest audit.
+- If the tool is absent, use the UBT workflow below. Do not repeatedly try an
+  unavailable MCP tool or open the Editor merely to obtain compilation access.
+
 ### Step 1: Resolve Engine Path
 
 Read the `.uproject` file's `EngineAssociation` field:
